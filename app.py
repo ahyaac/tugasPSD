@@ -17,6 +17,11 @@ st.set_page_config(
     layout="wide",
 )
 
+# Menambahkan folder yang berisi prediksi.py ke sys.path
+sys.path.append('C:/ann')  # Pastikan folder ini berisi file prediksi.py
+from prediksi_ann import tampilkan_ANN  # Mengimpor fungsi dari prediksi.py
+from prediksi_knn import tampilkan_KNN  # Mengimpor fungsi dari prediksi.py
+from prediksi_nb import tampilkan_NB  # Mengimpor fungsi dari prediksi.py
 
 # Fungsi untuk memuat data dengan cache
 @st.cache_data
@@ -29,7 +34,7 @@ with st.sidebar:
     st.title("Navigasi")
     halaman = st.radio(
         "Pilih Halaman:",
-        ("Home")
+        ("Home", "ANN Penceptron", "KNN", "Naive Bayes")
     )
 
 # Halaman Home
@@ -209,6 +214,7 @@ if halaman == "Home":
         disp.plot(cmap=plt.cm.Blues)
         st.pyplot(plt.gcf())
         
+        # Menyimpan hasil evaluasi
         results[model_name] = {
             'accuracy': accuracy,
             'precision': precision,
@@ -216,10 +222,12 @@ if halaman == "Home":
             'f1': f1
         }
     
+    # Menampilkan perbandingan model
     st.subheader("Perbandingan Model")
     results_df = pd.DataFrame(results).T
     st.dataframe(results_df)
     
+    # Evaluasi Perceptron dengan epoch 4
     model_perceptron_4 = Perceptron(max_iter=4, random_state=42)
     model_perceptron_4.fit(X_train, y_train)
     y_pred_4 = model_perceptron_4.predict(X_test)
@@ -240,6 +248,7 @@ if halaman == "Home":
     disp_4.plot(cmap=plt.cm.Blues)
     st.pyplot(plt.gcf())
 
+    # Evaluasi Perceptron dengan epoch 8
     model_perceptron_8 = Perceptron(max_iter=8, random_state=42)
     model_perceptron_8.fit(X_train, y_train)
     y_pred_8 = model_perceptron_8.predict(X_test)
@@ -260,12 +269,20 @@ if halaman == "Home":
     disp_8.plot(cmap=plt.cm.Blues)
     st.pyplot(plt.gcf())
 
+    # Menyimpan hasil perbandingan Perceptron dengan epoch 4 dan 8
     results_perceptron = {
         'epoch 4': {'accuracy': accuracy_4, 'precision': precision_4, 'recall': recall_4, 'f1': f1_4},
         'epoch 8': {'accuracy': accuracy_8, 'precision': precision_8, 'recall': recall_8, 'f1': f1_8}
     }
     
+    # Menampilkan perbandingan Perceptron epoch 4 dan 8
     st.subheader("Perbandingan Model Perceptron Epoch 4 dan 8")
     results_perceptron_df = pd.DataFrame(results_perceptron).T
     st.dataframe(results_perceptron_df)
 
+elif halaman == "ANN Penceptron":
+    tampilkan_ANN()  # Memanggil fungsi dari prediksi.py
+elif halaman == "KNN":
+    tampilkan_KNN()  # Memanggil fungsi dari prediksi.py
+elif halaman == "Naive Bayes":
+    tampilkan_NB()  # Memanggil fungsi dari prediksi.py
