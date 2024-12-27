@@ -1,15 +1,9 @@
 import streamlit as st
-import pickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-# Memuat model KNN dan scaler yang telah disimpan
-with open('knn_model.pkl', 'rb') as file:
-    knn_model = pickle.load(file)
-
-with open('scaler.pkl', 'rb') as file:
-    scaler = pickle.load(file)
 
 # Memuat dataset dari file diabetes.csv
 @st.cache
@@ -25,6 +19,14 @@ y = data['Diabetes_012']
 # Membagi dataset menjadi data latih dan uji
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Normalisasi fitur
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Melatih model KNN dengan k=5
+knn_model = KNeighborsClassifier(n_neighbors=5)
+knn_model.fit(X_train_scaled, y_train)
 
 # Fungsi untuk melakukan prediksi dengan model KNN
 def predict_knn(features):
@@ -45,7 +47,6 @@ def tampilkan_KNN():
         menderita diabetes berdasarkan parameter tertentu.
     """)
 
-    # Input data pengguna
     # Input data pengguna
     high_bp = st.radio("Tekanan Darah Tinggi (HighBP)", [0, 1], index=0)
     high_chol = st.radio("Kolesterol Tinggi (HighChol)", [0, 1], index=0)
@@ -91,14 +92,13 @@ def tampilkan_KNN():
 
         # Evaluasi model pada data uji
         st.header("📊 Evaluasi Model")
-        y_pred_test = knn_model.predict(scaler.transform(X_test))
+        y_pred_test = knn_model.predict(X_test_scaled)
         acc = accuracy_score(y_test, y_pred_test)
-        prec = precision_score(y_test, y_pred_test)
-        rec = recall_score(y_test, y_pred_test)
-        f1 = f1_score(y_test, y_pred_test)
+        prec = precision_score(y_test, y_pred_test, average='weighted')
+        rec = recall_score(y_test, y_pred_test, average='weighted')
+        f1 = f1_score(y_test, y_pred_test, average='weighted')
 
         st.write(f"**Akurasi:** {acc:.2f}")
         st.write(f"**Precision:** {prec:.2f}")
         st.write(f"**Recall:** {rec:.2f}")
         st.write(f"**F1-Score:** {f1:.2f}")
-
